@@ -221,3 +221,58 @@
   )
 )
 
+;; AI-based smart contract optimization and validation system
+;; This function analyzes storage patterns and automatically adjusts
+;; provider parameters for optimal marketplace efficiency
+(define-public (ai-optimize-storage-parameters (provider principal))
+  (begin
+    (let ((provider-data (unwrap! (map-get? storage-providers { provider: provider }) err-provider-not-found)))
+      (let ((reputation (get reputation-score provider-data)))
+        (let ((client-count (get total-clients provider-data)))
+          (let ((current-price (get price-per-gb provider-data)))
+            (let ((available-storage (get available-storage provider-data)))
+              
+              ;; AI-based optimization calculations
+              (let ((market-demand-factor (if (> client-count u10) u110 u90)))
+                (let ((storage-availability-factor (if (> available-storage u1000) u95 u105)))
+                  
+                  ;; Calculate optimized parameters
+                  (let ((optimized-price (/ (* current-price (/ (* market-demand-factor storage-availability-factor) u100)) u100)))
+                    (let ((reputation-adjustment (if (> client-count u5) u5 u0)))
+                      (let ((new-reputation (+ reputation reputation-adjustment)))
+                        (let ((capped-reputation (if (> new-reputation u500) u500 new-reputation)))
+                          
+                          ;; Verify caller authorization
+                          (asserts! (or (is-eq tx-sender provider) (is-eq tx-sender contract-owner)) err-not-authorized)
+                          
+                          ;; Apply AI-optimized parameters
+                          (map-set storage-providers
+                            { provider: provider }
+                            (merge provider-data {
+                              price-per-gb: optimized-price,
+                              reputation-score: capped-reputation
+                            })
+                          )
+                          
+                          ;; Return optimization results
+                          (ok {
+                            previous-price: current-price,
+                            optimized-price: optimized-price,
+                            market-demand-factor: market-demand-factor,
+                            storage-availability-factor: storage-availability-factor,
+                            reputation-adjustment: reputation-adjustment,
+                            new-reputation: capped-reputation
+                          })
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+)
